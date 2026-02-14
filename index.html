@@ -1022,6 +1022,9 @@
             </svg>
     </button>
     <button id="toggleMapBtn" title="Alle Gemeinden markieren / zurücksetzen">🗺️</button>
+    <button id="soundToggleBtn" title="Sound an/aus">🔊</button>
+    <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="1" style="width:100px;">
+
 
 </div>
 
@@ -1062,6 +1065,9 @@ let mode = modeSelect.value;
 const guessedPaths = new Set();
 const finalColors = {};
 const blinkingIntervals = {};
+let soundEnabled = true;
+const soundToggleBtn = document.getElementById("soundToggleBtn");
+const volumeSlider = document.getElementById("volumeSlider");
 
 
 const mapSelect = document.getElementById("mapSelect");
@@ -1075,6 +1081,7 @@ let customMaps = JSON.parse(localStorage.getItem("customMaps")) || {};
 let activeMap = "default";
 let mapExcludeLists = JSON.parse(localStorage.getItem("mapExcludeLists")) || {};
 
+updateSoundVolume();
 
 function getActivePaths() {
     const currentExclude = activeMap === "default"
@@ -1726,6 +1733,25 @@ function startBlinking(target) {
     blink(); // Start
 }
 
+// Ein/Aus
+soundToggleBtn.addEventListener("click", () => {
+    soundEnabled = !soundEnabled;
+    soundToggleBtn.textContent = soundEnabled ? "🔊" : "🔇";
+    updateSoundVolume();
+});
+
+// Lautstärke ändern
+volumeSlider.addEventListener("input", () => {
+    updateSoundVolume();
+});
+
+
+function updateSoundVolume() {
+    const volume = soundEnabled ? parseFloat(volumeSlider.value) : 0;
+    correctSound.volume = volume;
+    wrongSound.volume = volume;
+    winSound.volume = volume;
+}
 
 
 
