@@ -1059,6 +1059,9 @@ let currentIndex = 0;
 const failColors = ["#ffff66", "#ffa500", "#ff0000"];
 const failCounts = {};
 let mode = modeSelect.value;
+const guessedPaths = new Set();
+const finalColors = {};
+
 
 const mapSelect = document.getElementById("mapSelect");
 const addMapBtn = document.getElementById("addMapBtn");
@@ -1127,14 +1130,26 @@ function setupPaths() {
         });
         item.addEventListener('mouseout', () => {
             const currentExclude = getCurrentExcludeList();
-            if (currentExclude.includes(item.id)) item.style.fill = "#888";
-            else if (mode === "lernen") item.style.fill = "#2c7448";
-            else if (mode === "quiz") {
-                if (shuffledPaths.slice(0, currentIndex).includes(item)) item.style.fill = "#ffffff";
-                else if (failCounts[item.id]) {
-                    const level = Math.min(failCounts[item.id]-1, failColors.length-1);
-                    item.style.fill = failColors[level];
-                } else item.style.fill = "#2c7448";
+
+            if (currentExclude.includes(item.id)) {
+                item.style.fill = "#888";
+                return;
+            }
+
+            if (mode === "lernen") {
+                item.style.fill = "#2c7448";
+                return;
+            }
+
+            if (mode === "quiz") {
+
+                // Wenn schon geraten → gespeicherte Farbe benutzen
+                if (guessedPaths.has(item.id)) {
+                    item.style.fill = finalColors[item.id];
+                    return;
+                }
+
+                item.style.fill = "#2c7448";
             }
         });
 
@@ -1282,6 +1297,8 @@ function setupPaths() {
         if (item.style.display === "none") return;
 
         const currentExclude = getCurrentExcludeList();
+        let level = 0;
+        const target = shuffledPaths[currentIndex];
 
             if (mode === "lernen") {
                 // Lernmodus Tooltip
@@ -1312,19 +1329,35 @@ function setupPaths() {
             if (currentExclude.includes(item.id)) return;
             totalAttempts++;
 
-            if (item === shuffledPaths[currentIndex]) {
-                item.style.fill = "#ffffff";
+            level = failCounts[target.id] ? Math.min(failCounts[target.id]-1, failColors.length-1) : 0;
+
+
+            if (item === target) {
+
+                guessedPaths.add(target.id);
+
+                let color;
+
+                if (failCounts[target.id]) {
+                    const level = Math.min(failCounts[target.id]-1, failColors.length-1);
+                    color = failColors[level];
+                } else {
+                    color = "#ffffff";
+                }
+
+                target.style.fill = color;
+                finalColors[target.id] = color;
+
                 guessedCount++;
                 currentIndex++;
+
 
                 correctSound.currentTime = 0;
                 correctSound.play();
 
             } else {
-                if (!failCounts[item.id]) failCounts[item.id] = 0;
-                failCounts[item.id]++;
-                const level = Math.min(failCounts[item.id]-1, failColors.length-1);
-                item.style.fill = failColors[level];
+                if (!failCounts[target.id]) failCounts[target.id] = 1;
+                else failCounts[target.id]++;
 
                 wrongSound.currentTime = 0;
                 wrongSound.play();
