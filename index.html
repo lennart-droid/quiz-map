@@ -1061,6 +1061,7 @@ const failCounts = {};
 let mode = modeSelect.value;
 const guessedPaths = new Set();
 const finalColors = {};
+const blinkingIntervals = {};
 
 
 const mapSelect = document.getElementById("mapSelect");
@@ -1129,6 +1130,7 @@ function setupPaths() {
             if (!currentExclude.includes(item.id)) item.style.fill = "#4b9c6b";
         });
         item.addEventListener('mouseout', () => {
+            if (blinkingIntervals[item.id]) return;
             const currentExclude = getCurrentExcludeList();
 
             if (currentExclude.includes(item.id)) {
@@ -1334,6 +1336,11 @@ function setupPaths() {
 
             if (item === target) {
 
+                if (blinkingIntervals[target.id]) {
+                    clearTimeout(blinkingIntervals[target.id]);
+                    delete blinkingIntervals[target.id];
+                }
+
                 guessedPaths.add(target.id);
 
                 let color;
@@ -1358,6 +1365,10 @@ function setupPaths() {
             } else {
                 if (!failCounts[target.id]) failCounts[target.id] = 1;
                 else failCounts[target.id]++;
+
+                if (failCounts[target.id] >= 3) {
+                    startBlinking(target);
+                }
 
                 wrongSound.currentTime = 0;
                 wrongSound.play();
@@ -1684,6 +1695,37 @@ toggleMapBtn.addEventListener("click", () => {
     // Quiz ggf. neu starten
     if (mode === "quiz") startQuiz();
 });
+
+function startBlinking(target) {
+
+    // Nur einmal pro Gemeinde starten
+    if (blinkingIntervals[target.id]) return;
+
+    let isRed = false;
+
+    function blink() {
+        // Wenn die Gemeinde korrekt geraten wurde, aufhören
+        if (guessedPaths.has(target.id)) {
+            clearTimeout(blinkingIntervals[target.id]);
+            delete blinkingIntervals[target.id];
+
+            // finale Farbe setzen
+            const level = Math.min(failCounts[target.id]-1, failColors.length-1);
+            target.style.fill = failColors[level] || "#ffffff";
+            return;
+        }
+
+        // Farbe hin- und herspringen
+        target.style.fill = isRed ? "#2c7448" : "#ff0000";
+        isRed = !isRed;
+
+        // Wieder aufrufen nach 400ms
+        blinkingIntervals[target.id] = setTimeout(blink, 400);
+    }
+
+    blink(); // Start
+}
+
 
 
 
