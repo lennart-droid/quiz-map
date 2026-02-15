@@ -79,6 +79,9 @@
         border-radius: 10px;
     }
 
+
+
+
 </style>
 
 <svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" width="1000" height="1283"
@@ -1022,11 +1025,34 @@
             </svg>
     </button>
     <button id="toggleMapBtn" title="Alle Gemeinden markieren / zurücksetzen">🗺️</button>
+    <button id="mouseBtn" title="Tooltip Einstellungen">⚙️</button>
     <button id="soundToggleBtn" title="Sound an/aus">🔊</button>
     <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="1" style="width:100px;">
 
-
 </div>
+
+
+
+<!-- Tooltip Einstellungen Modal -->
+<div id="tooltipModal" class="modal">
+    <div class="modalContent">
+        <h3>Tooltip Einstellungen</h3>
+
+        <div>
+            <label>Allgemeine Tooltip-Größe: </label>
+            <input type="number" id="generalTooltipSize" min="8" max="50" value="12"> px
+        </div>
+
+        <div style="margin-top:10px;">
+            <h4>Provinz-spezifische Anpassungen</h4>
+            <div id="provinceTooltipList"></div>
+        </div>
+
+        <button id="saveTooltipBtn">Speichern</button>
+        <button id="cancelTooltipBtn">Abbrechen</button>
+    </div>
+</div>
+
 
 
 <!-- Overlay Fenster -->
@@ -1080,6 +1106,14 @@ const cancelMapBtn = document.getElementById("cancelMapBtn");
 let customMaps = JSON.parse(localStorage.getItem("customMaps")) || {};
 let activeMap = "default";
 let mapExcludeLists = JSON.parse(localStorage.getItem("mapExcludeLists")) || {};
+
+//tooltip
+const mouseBtn = document.getElementById("mouseBtn");
+const tooltipModal = document.getElementById("tooltipModal");
+const generalTooltipSizeInput = document.getElementById("generalTooltipSize");
+const provinceTooltipList = document.getElementById("provinceTooltipList");
+const saveTooltipBtn = document.getElementById("saveTooltipBtn");
+const cancelTooltipBtn = document.getElementById("cancelTooltipBtn");
 
 updateSoundVolume();
 
@@ -1271,30 +1305,10 @@ function setupPaths() {
         const target = shuffledPaths[currentIndex];
 
             if (mode === "lernen") {
-                // Lernmodus Tooltip
-                const tempTooltip = document.createElement('div');
-                tempTooltip.innerHTML = item.id;
-                Object.assign(tempTooltip.style, {
-                    position: 'absolute',
-                    background: 'rgba(50,50,50,0.85)',
-                    color: 'white',
-                    padding: '2px 4px',
-                    borderRadius: '4px',
-                    fontSize: '12px',
-                    pointerEvents: 'none',
-                    opacity: 1,
-                    whiteSpace: 'nowrap'
-                });
-                const bbox = item.getBoundingClientRect();
-                tempTooltip.style.left = `${bbox.left + bbox.width/2 + window.scrollX}px`;
-                tempTooltip.style.top = `${bbox.top + bbox.height/2 + window.scrollY}px`;
-                document.body.appendChild(tempTooltip);
-                setTimeout(() => {
-                    tempTooltip.style.opacity = 0;
-                    setTimeout(() => tempTooltip.remove(), 800);
-                }, 1000);
+                showTooltip(item);
                 return;
             }
+
 
             if (currentExclude.includes(item.id)) return;
             totalAttempts++;
@@ -1355,28 +1369,6 @@ function setupPaths() {
                 winSound.play();
                 alert("Glückwunsch! Alle Gemeinden erraten!");
                 startQuiz();
-            }
-        });
-    });
-}
-
-function setupProvinceTooltip() {
-    provinceGroups.forEach(province => {
-        province.addEventListener('mousemove', (event) => {
-            if (mode === "quiz" && shuffledPaths[currentIndex]) {
-                const x = event.clientX + window.scrollX + 10;
-                const y = event.clientY + window.scrollY + 10;
-
-                toggle.style.left = `${x}px`;
-                toggle.style.top = `${y}px`;
-                toggle.innerHTML = `Klicke auf: <strong>${shuffledPaths[currentIndex].id}</strong>`;
-                toggle.style.display = 'block';
-            }
-        });
-
-        province.addEventListener('mouseout', () => {
-            if (mode === "quiz") {
-                toggle.style.display = 'none';
             }
         });
     });
@@ -1778,15 +1770,156 @@ function resetQuiz() {
 }
 
 
+// tooltip Speicherung
+let tooltipSettings = JSON.parse(localStorage.getItem("tooltipSettings")) || {
+    generalSize: 12,
+    provinces: {}  // provinceId: size
+};
+
+// MouseButton öffnet Modal
+mouseBtn.addEventListener("click", () => {
+    generalTooltipSizeInput.value = tooltipSettings.generalSize;
+
+    // Provinz-Liste bauen
+    provinceTooltipList.innerHTML = "";
+    provinceGroups.forEach(province => {
+        const id = province.id;
+        const label = document.createElement("label");
+        label.style.display = "block";
+        label.style.marginBottom = "4px";
+
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = 8;
+        input.max = 50;
+        input.value = tooltipSettings.provinces[id] || tooltipSettings.generalSize;
+        input.dataset.provinceId = id;
+        input.style.width = "50px";
+        input.style.marginRight = "6px";
+
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(id));
+        provinceTooltipList.appendChild(label);
+    });
+
+    tooltipModal.style.display = "block";
+});
+
+// tooltip Abbrechen
+cancelTooltipBtn.addEventListener("click", () => {
+    tooltipModal.style.display = "none";
+});
+
+// tooltip Speichern
+saveTooltipBtn.addEventListener("click", () => {
+    tooltipSettings.generalSize = parseInt(generalTooltipSizeInput.value);
+
+    provinceTooltipList.querySelectorAll("input").forEach(input => {
+        const val = parseInt(input.value);
+        const provinceId = input.dataset.provinceId;
+        if (val !== tooltipSettings.generalSize) {
+            tooltipSettings.provinces[provinceId] = val;
+        } else {
+            delete tooltipSettings.provinces[provinceId];
+        }
+    });
+
+    localStorage.setItem("tooltipSettings", JSON.stringify(tooltipSettings));
+    tooltipModal.style.display = "none";
+});
+
+// Funktion zum Anzeigen der Tooltips
+function showTooltip(item) {
+    // Sucht das nächste g-Element, das mit 'p_' beginnt (deine Provinz-IDs)
+    let provinceId = null;
+    let parent = item.parentElement;
+    while (parent && !parent.id.startsWith("p_")) {
+        parent = parent.parentElement;
+    }
+    provinceId = parent?.id;
+
+    const size = tooltipSettings.provinces[provinceId] || tooltipSettings.generalSize;
+
+    const tempTooltip = document.createElement('div');
+    tempTooltip.innerHTML = item.id;
+
+    const padding = Math.max(1, Math.round(size / 3)); // Padding proportional
+
+    Object.assign(tempTooltip.style, {
+        position: 'absolute',
+        background: 'rgba(50,50,50,0.85)',
+        color: 'white',
+        padding: `${padding}px ${padding*2}px`,
+        borderRadius: '4px',
+        fontSize: `${size}px`,
+        pointerEvents: 'none',
+        opacity: 1,
+        whiteSpace: 'nowrap'
+    });
+    const bbox = item.getBoundingClientRect();
+    tempTooltip.style.left = `${bbox.left + bbox.width/2 + window.scrollX}px`;
+    tempTooltip.style.top = `${bbox.top + bbox.height/2 + window.scrollY}px`;
+    document.body.appendChild(tempTooltip);
+    setTimeout(() => {
+        tempTooltip.style.opacity = 0;
+        setTimeout(() => tempTooltip.remove(), 800);
+    }, 1000);
+}
+
+// Tooltip im Lernmodus ersetzen
+svgPath.forEach(item => {
+    item.addEventListener('click', () => {
+        if (mode === "lernen") {
+            showTooltip(item);
+        }
+    });
+});
+
+function updateQuizTooltipPosition(event) {
+    if (mode !== "quiz" || !shuffledPaths[currentIndex]) return;
+
+    const province = event.currentTarget; // das aktuelle g.province unter der Maus
+    const provinceId = province.id;
+
+    // Tooltip-Größe aus Einstellung der Provinz
+    const size = tooltipSettings.provinces[provinceId] || tooltipSettings.generalSize;
+
+    // Position + Inhalt
+    const x = event.clientX + window.scrollX + 10;
+    const y = event.clientY + window.scrollY + 10;
+
+    toggle.style.left = `${x}px`;
+    toggle.style.top = `${y}px`;
+    toggle.innerHTML = `Klicke auf: <strong>${shuffledPaths[currentIndex].id}</strong>`;
+
+    // Größe und Hintergrund anpassen
+    toggle.style.fontSize = `${size}px`;
+    toggle.style.background = 'rgba(50,50,50,0.85)'; // optional: später anpassbar
+
+    toggle.style.display = 'block';
+}
 
 
-
+// Provinz-Tooltips im Quizmodus
+provinceGroups.forEach(province => {
+    province.addEventListener('mousemove', updateQuizTooltipPosition);
+    province.addEventListener('mouseout', () => {
+        if (mode === "quiz") toggle.style.display = 'none';
+    });
+});
 
 
 
 
 setupPaths();
-setupProvinceTooltip()
+
+provinceGroups.forEach(province => {
+    province.addEventListener('mousemove', updateQuizTooltipPosition);
+    province.addEventListener('mouseout', () => {
+        if (mode === "quiz") toggle.style.display = 'none';
+    });
+});
+
 startQuiz();
 </script>
 </body>
