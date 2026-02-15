@@ -1096,6 +1096,7 @@ function getActivePaths() {
 
 
 function startQuiz() {
+    resetQuiz()
     toggle.style.display = 'none';
     guessedCount = 0;
     totalAttempts = 0;
@@ -1762,6 +1763,37 @@ function getCurrentExcludeList() {
         ? excludeList
         : mapExcludeLists[activeMap] || [];
 }
+
+function resetQuiz() {
+
+    guessedCount = 0;
+    totalAttempts = 0;
+    currentIndex = 0;
+
+    Object.keys(failCounts).forEach(key => delete failCounts[key]);
+    guessedPaths.clear();
+    Object.keys(finalColors).forEach(key => delete finalColors[key]);
+
+    Object.keys(blinkingIntervals).forEach(id => {
+        clearTimeout(blinkingIntervals[id]);
+        delete blinkingIntervals[id];
+    });
+
+    svgPath.forEach(item => {
+        item.style.fill = "#2c7448";
+    });
+
+    // Neu mischen
+    shuffledPaths = svgPath.filter(p => !excludeList.includes(p.id));
+    shuffledPaths.sort(() => Math.random() - 0.5);
+
+    updateScore();
+
+    if (shuffledPaths.length > 0) {
+        toggle.innerHTML = `Klicke auf: <strong>${shuffledPaths[0].id}</strong>`;
+    }
+}
+
 
 
 
