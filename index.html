@@ -1163,46 +1163,6 @@ function setupPaths() {
             }
         });
 
-        // Tooltip / Toggle
-        item.addEventListener('mousemove', (event) => {
-            if (item.style.display === "none") return;
-
-            const x = event.clientX + window.scrollX + 5;
-            const y = event.clientY + window.scrollY + 5;
-            toggle.style.left = `${x}px`;
-            toggle.style.top = `${y}px`;
-            if (mode === "quiz" && shuffledPaths[currentIndex]) {
-                toggle.innerHTML = `Klicke auf: <strong>${shuffledPaths[currentIndex].id}</strong>`;
-                toggle.style.display = 'block';
-            }
-        });
-
-        provinceGroups.forEach(province => {
-            province.addEventListener('mousemove', (event) => {
-                if (mode === "quiz" && shuffledPaths[currentIndex]) {
-                    const x = event.clientX + window.scrollX + 10;
-                    const y = event.clientY + window.scrollY + 10;
-
-                    toggle.style.left = `${x}px`;
-                    toggle.style.top = `${y}px`;
-                    toggle.innerHTML = `Klicke auf: <strong>${shuffledPaths[currentIndex].id}</strong>`;
-                    toggle.style.display = 'block';
-                }
-            });
-
-            province.addEventListener('mouseout', () => {
-                if (mode === "quiz") {
-                    toggle.style.display = 'none';
-                }
-            });
-        });
-
-
-        item.addEventListener('mouseout', () => {
-            if (mode === "quiz") toggle.style.display = 'none';
-        });
-
-
         // Rechtsklick + Drag (Smart Toggle)
         if (!window.rightMouseSystemInitialized) {
 
@@ -1384,7 +1344,7 @@ function setupPaths() {
 
             updateScore();
 
-            if (shuffledPaths[currentIndex]) {
+            if (shuffledPaths[currentIndex]) {//asd
                 toggle.innerHTML = `Klicke auf: <strong>${shuffledPaths[currentIndex].id}</strong>`;
                 toggle.style.display = 'block';
             } else {
@@ -1399,6 +1359,29 @@ function setupPaths() {
         });
     });
 }
+
+function setupProvinceTooltip() {
+    provinceGroups.forEach(province => {
+        province.addEventListener('mousemove', (event) => {
+            if (mode === "quiz" && shuffledPaths[currentIndex]) {
+                const x = event.clientX + window.scrollX + 10;
+                const y = event.clientY + window.scrollY + 10;
+
+                toggle.style.left = `${x}px`;
+                toggle.style.top = `${y}px`;
+                toggle.innerHTML = `Klicke auf: <strong>${shuffledPaths[currentIndex].id}</strong>`;
+                toggle.style.display = 'block';
+            }
+        });
+
+        province.addEventListener('mouseout', () => {
+            if (mode === "quiz") {
+                toggle.style.display = 'none';
+            }
+        });
+    });
+}
+
 
 function buildRegionProvinceStructure() {
     const structure = {};
@@ -1803,6 +1786,7 @@ function resetQuiz() {
 
 
 setupPaths();
+setupProvinceTooltip()
 startQuiz();
 </script>
 </body>
