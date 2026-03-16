@@ -124,7 +124,7 @@ function setupPaths() {
             saveExcludeList(currentExclude);
 
             if (mode === "quiz") startQuiz();
-            return true;
+            return { toggled: true, wasExcluded: isExcluded };
         }
 
         function applyDragExclude(itemToToggle) {
@@ -157,11 +157,11 @@ function setupPaths() {
         item.addEventListener('touchstart', (event) => {
             if (event.touches.length !== 1) return;
             longPressTimer = setTimeout(() => {
-                const toggled = toggleExclude(item);
-                if (toggled) {
+                const result = toggleExclude(item);
+                if (result && result.toggled) {
                     window.touchExcludeActive = true;
-                    const currentExclude = getCurrentExcludeList();
-                    window.dragMode = currentExclude.includes(item.id) ? "add" : "remove";
+                    window.dragMode = result.wasExcluded ? "remove" : "add";
+                    window.lastTouchElement = item;
                     document.body.style.overflow = "hidden";
                     const mapContainer = document.getElementById("mapContainer");
                     if (mapContainer) mapContainer.style.touchAction = "none";
