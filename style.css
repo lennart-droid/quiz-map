@@ -1,0 +1,78 @@
+#modeSelector {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: 20px;
+    left: 550px;
+    font-family: sans-serif;
+    font-size: 25px;
+    background: rgba(255,255,255,0.8);
+    padding: 10px 20px;
+    border-radius: 8px;
+    height: 3px;
+    gap: 10px;
+}
+
+#modeSelector select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    border: 2px solid #999;
+    border-radius: 6px;
+
+    font-size: 22px;
+    padding: 6px 14px;
+    min-height: 40px;
+    width: 80px;
+
+    cursor: pointer;
+}
+
+#modeSelector select:focus {
+    outline: none; /* entfernt die dicke Standard-Markierung */
+    border: 2px solid #999; /* eigene dünne Umrandung */
+    box-shadow: 0 0 5px rgba(30,131,70,0.7), 0 0 15px rgba(30,131,70,0.4),
+    0 0 30px rgba(30,131,70,0.2);
+}
+
+#mapSelector {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: 20px;
+    left: 790px;
+    font-family: sans-serif;
+    font-size: 22px;
+    background: rgba(255,255,255,0.8);
+    padding: 10px 20px;
+    border-radius: 8px;
+    gap: 10px;
+}
+
+#mapSelector select {
+    font-size: 20px;
+    padding: 5px 10px;
+}
+
+#addMapBtn {
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+}
+
+.modalContent {
+    background: white;
+    padding: 20px;
+    width: 400px;
+    max-height: 70vh;
+    overflow-y: auto;
+    margin: 100px auto;
+    border-radius: 10px;
+}
