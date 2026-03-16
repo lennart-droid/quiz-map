@@ -160,6 +160,9 @@ function setupPaths() {
                 const toggled = toggleExclude(item);
                 if (toggled) {
                     window.touchExcludeActive = true;
+                    document.body.style.overflow = "hidden";
+                    const mapContainer = document.getElementById("mapContainer");
+                    if (mapContainer) mapContainer.style.touchAction = "none";
                     item.dataset.suppressClick = "1";
                     setTimeout(() => {
                         delete item.dataset.suppressClick;
@@ -208,6 +211,9 @@ function setupPaths() {
             document.addEventListener('touchend', () => {
                 window.touchExcludeActive = false;
                 window.lastTouchElement = null;
+                document.body.style.overflow = "";
+                const mapContainer = document.getElementById("mapContainer");
+                if (mapContainer) mapContainer.style.touchAction = "";
             }, { passive: true });
 
             window.touchExcludeSystemInitialized = true;
