@@ -98,128 +98,35 @@ function setupPaths() {
             }
         }
 
-        function toggleExclude(itemToToggle) {
-            if (itemToToggle.style.display === "none") return false;
+        item.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            if (item.style.display === "none") return;
 
             if (mode === "quiz" && totalAttempts > 0) {
                 const confirmChange = confirm(
                     "Diese Aktion setzt deine Runde zurück.\n\nFortfahren und Karte verändern?"
                 );
-                if (!confirmChange) return false;
+                if (!confirmChange) return;
             }
 
             let currentExclude = getCurrentExcludeList();
-            const isExcluded = currentExclude.includes(itemToToggle.id);
+
+            const isExcluded = currentExclude.includes(item.id);
 
             window.dragMode = isExcluded ? "remove" : "add";
 
             if (window.dragMode === "add") {
-                currentExclude.push(itemToToggle.id);
-                itemToToggle.style.fill = "#888";
+                currentExclude.push(item.id);
+                item.style.fill = "#888";
             } else {
-                currentExclude = currentExclude.filter(id => id !== itemToToggle.id);
-                itemToToggle.style.fill = "#2c7448";
+                currentExclude = currentExclude.filter(id => id !== item.id);
+                item.style.fill = "#2c7448";
             }
 
             saveExcludeList(currentExclude);
 
             if (mode === "quiz") startQuiz();
-            return true;
-        }
-
-        function applyDragExclude(itemToToggle) {
-            if (itemToToggle.style.display === "none") return;
-
-            let currentExclude = getCurrentExcludeList();
-            const isExcluded = currentExclude.includes(itemToToggle.id);
-
-            if (window.dragMode === "add" && !isExcluded) {
-                currentExclude.push(itemToToggle.id);
-                itemToToggle.style.fill = "#888";
-                saveExcludeList(currentExclude);
-                if (mode === "quiz") startQuiz();
-            }
-
-            if (window.dragMode === "remove" && isExcluded) {
-                currentExclude = currentExclude.filter(id => id !== itemToToggle.id);
-                itemToToggle.style.fill = "#2c7448";
-                saveExcludeList(currentExclude);
-                if (mode === "quiz") startQuiz();
-            }
-        }
-
-        item.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-            toggleExclude(item);
         });
-
-        let longPressTimer = null;
-        item.addEventListener('touchstart', (event) => {
-            if (event.touches.length !== 1) return;
-            longPressTimer = setTimeout(() => {
-                const toggled = toggleExclude(item);
-                if (toggled) {
-                    window.touchExcludeActive = true;
-                    const currentExclude = getCurrentExcludeList();
-                    window.dragMode = currentExclude.includes(item.id) ? "add" : "remove";
-                    document.body.style.overflow = "hidden";
-                    const mapContainer = document.getElementById("mapContainer");
-                    if (mapContainer) mapContainer.style.touchAction = "none";
-                    item.dataset.suppressClick = "1";
-                    setTimeout(() => {
-                        delete item.dataset.suppressClick;
-                    }, 400);
-                }
-            }, 500);
-        }, { passive: true });
-
-        item.addEventListener('touchmove', () => {
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-        }, { passive: true });
-
-        item.addEventListener('touchend', () => {
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-        });
-
-        if (!window.touchExcludeSystemInitialized) {
-            window.touchExcludeActive = false;
-            window.lastTouchElement = null;
-
-            document.addEventListener('touchmove', (event) => {
-                if (!window.touchExcludeActive) return;
-                event.preventDefault();
-
-                const touch = event.touches[0];
-                if (!touch) return;
-
-                const el = document.elementFromPoint(touch.clientX, touch.clientY);
-                if (!el) return;
-
-                const path = el.closest('path');
-                if (!path || !path.id) return;
-
-                if (path === window.lastTouchElement) return;
-                window.lastTouchElement = path;
-
-                applyDragExclude(path);
-            }, { passive: false });
-
-            document.addEventListener('touchend', () => {
-                window.touchExcludeActive = false;
-                window.lastTouchElement = null;
-                document.body.style.overflow = "";
-                const mapContainer = document.getElementById("mapContainer");
-                if (mapContainer) mapContainer.style.touchAction = "";
-            }, { passive: true });
-
-            window.touchExcludeSystemInitialized = true;
-        }
 
         item.addEventListener('mouseenter', () => {
             if (!window.rightMouseDown) return;
@@ -245,10 +152,6 @@ function setupPaths() {
         });
 
         item.addEventListener('click', () => {
-            if (item.dataset.suppressClick) {
-                delete item.dataset.suppressClick;
-                return;
-            }
             if (item.style.display === "none") return;
 
             const currentExclude = getCurrentExcludeList();
