@@ -1,4 +1,4 @@
-function startQuiz() {
+﻿function startQuiz() {
     resetQuiz();
     toggle.style.display = 'none';
     guessedCount = 0;
@@ -61,6 +61,10 @@ function setupPaths() {
         });
 
         item.addEventListener('click', () => {
+            if (item.dataset.suppressClick) {
+                delete item.dataset.suppressClick;
+                return;
+            }
             if (mode === "lernen") showTooltip(item);
         });
 
@@ -98,34 +102,67 @@ function setupPaths() {
             }
         }
 
-        item.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-            if (item.style.display === "none") return;
+        function toggleExclude(itemToToggle) {
+            if (itemToToggle.style.display === "none") return false;
 
             if (mode === "quiz" && totalAttempts > 0) {
                 const confirmChange = confirm(
                     "Diese Aktion setzt deine Runde zurück.\n\nFortfahren und Karte verändern?"
                 );
-                if (!confirmChange) return;
+                if (!confirmChange) return false;
             }
 
             let currentExclude = getCurrentExcludeList();
 
-            const isExcluded = currentExclude.includes(item.id);
+            const isExcluded = currentExclude.includes(itemToToggle.id);
 
             window.dragMode = isExcluded ? "remove" : "add";
 
             if (window.dragMode === "add") {
-                currentExclude.push(item.id);
-                item.style.fill = "#888";
+                currentExclude.push(itemToToggle.id);
+                itemToToggle.style.fill = "#888";
             } else {
-                currentExclude = currentExclude.filter(id => id !== item.id);
-                item.style.fill = "#2c7448";
+                currentExclude = currentExclude.filter(id => id !== itemToToggle.id);
+                itemToToggle.style.fill = "#2c7448";
             }
 
             saveExcludeList(currentExclude);
 
             if (mode === "quiz") startQuiz();
+            return true;
+        }
+
+        item.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            toggleExclude(item);
+        });
+
+        let longPressTimer = null;
+        item.addEventListener('touchstart', (event) => {
+            if (event.touches.length !== 1) return;
+            longPressTimer = setTimeout(() => {
+                const toggled = toggleExclude(item);
+                if (toggled) {
+                    item.dataset.suppressClick = "1";
+                    setTimeout(() => {
+                        delete item.dataset.suppressClick;
+                    }, 400);
+                }
+            }, 600);
+        }, { passive: true });
+
+        item.addEventListener('touchmove', () => {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+        }, { passive: true });
+
+        item.addEventListener('touchend', () => {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
         });
 
         item.addEventListener('mouseenter', () => {
@@ -152,6 +189,10 @@ function setupPaths() {
         });
 
         item.addEventListener('click', () => {
+            if (item.dataset.suppressClick) {
+                delete item.dataset.suppressClick;
+                return;
+            }
             if (item.style.display === "none") return;
 
             const currentExclude = getCurrentExcludeList();
@@ -216,7 +257,7 @@ function setupPaths() {
 
             if (guessedCount === shuffledPaths.length) {
                 winSound.play();
-                alert("Glückwunsch! Alle Gemeinden erraten!");
+                alert("GlÃ¼ckwunsch! Alle Gemeinden erraten!");
                 startQuiz();
             }
         });
@@ -349,3 +390,5 @@ modeSelect.addEventListener('change', () => {
         toggle.style.display = 'none';
     }
 });
+
+
