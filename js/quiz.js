@@ -1,4 +1,4 @@
-﻿function startQuiz() {
+function startQuiz() {
     resetQuiz();
     toggle.style.display = 'none';
     guessedCount = 0;
@@ -61,10 +61,6 @@ function setupPaths() {
         });
 
         item.addEventListener('click', () => {
-            if (item.dataset.suppressClick) {
-                delete item.dataset.suppressClick;
-                return;
-            }
             if (mode === "lernen") showTooltip(item);
         });
 
@@ -113,7 +109,6 @@ function setupPaths() {
             }
 
             let currentExclude = getCurrentExcludeList();
-
             const isExcluded = currentExclude.includes(itemToToggle.id);
 
             window.dragMode = isExcluded ? "remove" : "add";
@@ -148,17 +143,21 @@ function setupPaths() {
                         delete item.dataset.suppressClick;
                     }, 400);
                 }
-            }, 600);
-        }, { passive: true });
+            }, 500);
+        }, { passive: false });
 
         item.addEventListener('touchmove', () => {
             if (longPressTimer) {
                 clearTimeout(longPressTimer);
                 longPressTimer = null;
             }
-        }, { passive: true });
+        }, { passive: false });
 
-        item.addEventListener('touchend', () => {
+        item.addEventListener('touchend', (e) => {
+            if (item.dataset.suppressClick) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             if (longPressTimer) {
                 clearTimeout(longPressTimer);
                 longPressTimer = null;
@@ -188,9 +187,10 @@ function setupPaths() {
             }
         });
 
-        item.addEventListener('click', () => {
+        item.addEventListener('click', (e) => {
             if (item.dataset.suppressClick) {
-                delete item.dataset.suppressClick;
+                e.preventDefault();
+                e.stopPropagation();
                 return;
             }
             if (item.style.display === "none") return;
@@ -257,7 +257,7 @@ function setupPaths() {
 
             if (guessedCount === shuffledPaths.length) {
                 winSound.play();
-                alert("GlÃ¼ckwunsch! Alle Gemeinden erraten!");
+                alert("Glückwunsch! Alle Gemeinden erraten!");
                 startQuiz();
             }
         });
@@ -390,5 +390,3 @@ modeSelect.addEventListener('change', () => {
         toggle.style.display = 'none';
     }
 });
-
-
