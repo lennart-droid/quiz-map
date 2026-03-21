@@ -133,21 +133,39 @@ function setupPaths() {
         });
 
         let longPressTimer = null;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchMoved = false;
+        let longPressTriggered = false;
+
         item.addEventListener('touchstart', (event) => {
             if (event.touches.length !== 1) return;
+            event.preventDefault();
+            const touch = event.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            touchMoved = false;
+            longPressTriggered = false;
+
             longPressTimer = setTimeout(() => {
+                longPressTriggered = true;
                 const toggled = toggleExclude(item);
                 if (toggled) {
                     item.dataset.suppressClick = "1";
                     setTimeout(() => {
                         delete item.dataset.suppressClick;
-                    }, 400);
+                    }, 800);
                 }
             }, 500);
         }, { passive: false });
 
-        item.addEventListener('touchmove', () => {
-            if (longPressTimer) {
+        item.addEventListener('touchmove', (event) => {
+            if (!longPressTimer || event.touches.length !== 1) return;
+            const touch = event.touches[0];
+            const dx = touch.clientX - touchStartX;
+            const dy = touch.clientY - touchStartY;
+            if (Math.hypot(dx, dy) > 8) {
+                touchMoved = true;
                 clearTimeout(longPressTimer);
                 longPressTimer = null;
             }
@@ -158,6 +176,16 @@ function setupPaths() {
                 e.preventDefault();
                 e.stopPropagation();
             }
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+            if (longPressTriggered && !touchMoved) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        item.addEventListener('touchcancel', () => {
             if (longPressTimer) {
                 clearTimeout(longPressTimer);
                 longPressTimer = null;

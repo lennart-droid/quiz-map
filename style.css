@@ -55,6 +55,15 @@
     padding: 5px 10px;
 }
 
+#mapContainer,
+#mapContainer svg,
+#mapContainer svg path {
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
 #addMapBtn {
     font-size: 20px;
     cursor: pointer;
