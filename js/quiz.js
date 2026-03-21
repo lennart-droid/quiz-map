@@ -133,18 +133,11 @@ function setupPaths() {
         });
 
         let longPressTimer = null;
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchMoved = false;
         let longPressTriggered = false;
 
         item.addEventListener('touchstart', (event) => {
             if (event.touches.length !== 1) return;
             event.preventDefault();
-            const touch = event.touches[0];
-            touchStartX = touch.clientX;
-            touchStartY = touch.clientY;
-            touchMoved = false;
             longPressTriggered = false;
 
             longPressTimer = setTimeout(() => {
@@ -159,18 +152,6 @@ function setupPaths() {
             }, 500);
         }, { passive: false });
 
-        item.addEventListener('touchmove', (event) => {
-            if (!longPressTimer || event.touches.length !== 1) return;
-            const touch = event.touches[0];
-            const dx = touch.clientX - touchStartX;
-            const dy = touch.clientY - touchStartY;
-            if (Math.hypot(dx, dy) > 8) {
-                touchMoved = true;
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-        }, { passive: false });
-
         item.addEventListener('touchend', (e) => {
             if (item.dataset.suppressClick) {
                 e.preventDefault();
@@ -180,7 +161,7 @@ function setupPaths() {
                 clearTimeout(longPressTimer);
                 longPressTimer = null;
             }
-            if (longPressTriggered && !touchMoved) {
+            if (longPressTriggered) {
                 e.preventDefault();
             }
         }, { passive: false });
