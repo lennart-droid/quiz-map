@@ -132,46 +132,6 @@ function setupPaths() {
             toggleExclude(item);
         });
 
-        let longPressTimer = null;
-        let longPressTriggered = false;
-
-        item.addEventListener('touchstart', (event) => {
-            if (event.touches.length !== 1) return;
-            longPressTriggered = false;
-
-            longPressTimer = setTimeout(() => {
-                longPressTriggered = true;
-                const toggled = toggleExclude(item);
-                if (toggled) {
-                    item.dataset.suppressClick = "1";
-                    setTimeout(() => {
-                        delete item.dataset.suppressClick;
-                    }, 800);
-                }
-            }, 500);
-        }, { passive: false });
-
-        item.addEventListener('touchend', (e) => {
-            if (item.dataset.suppressClick) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-            if (longPressTriggered) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-
-        item.addEventListener('touchcancel', () => {
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-        });
-
         item.addEventListener('mouseenter', () => {
             if (!window.rightMouseDown) return;
             if (!window.dragMode) return;
@@ -195,10 +155,9 @@ function setupPaths() {
             }
         });
 
-        item.addEventListener('click', (e) => {
+        item.addEventListener('click', () => {
             if (item.dataset.suppressClick) {
-                e.preventDefault();
-                e.stopPropagation();
+                delete item.dataset.suppressClick;
                 return;
             }
             if (item.style.display === "none") return;
