@@ -137,7 +137,6 @@ function setupPaths() {
 
         item.addEventListener('touchstart', (event) => {
             if (event.touches.length !== 1) return;
-            event.preventDefault();
             longPressTriggered = false;
 
             longPressTimer = setTimeout(() => {
