@@ -6,8 +6,6 @@ function startQuiz() {
     currentIndex = 0;
     for (let key in failCounts) delete failCounts[key];
 
-    const currentExclude = getCurrentExcludeList();
-
     shuffledPaths = getActivePaths().slice().sort(() => Math.random() - 0.5);
 
     svgPath.forEach(p => {
@@ -84,45 +82,6 @@ function setupPaths() {
             window.rightMouseSystemInitialized = true;
         }
 
-        function saveExcludeList(list) {
-            if (activeMap === "default") {
-                excludeList = list;
-                localStorage.setItem("excludeList", JSON.stringify(excludeList));
-            } else {
-                mapExcludeLists[activeMap] = list;
-                localStorage.setItem("mapExcludeLists", JSON.stringify(mapExcludeLists));
-            }
-        }
-
-        function toggleExclude(itemToToggle) {
-            if (itemToToggle.style.display === "none") return false;
-
-            if (mode === "quiz" && totalAttempts > 0) {
-                const confirmChange = confirm(
-                    "Diese Aktion setzt deine Runde zurück.\n\nFortfahren und Karte verändern?"
-                );
-                if (!confirmChange) return false;
-            }
-
-            let currentExclude = getCurrentExcludeList();
-            const isExcluded = currentExclude.includes(itemToToggle.id);
-
-            window.dragMode = isExcluded ? "remove" : "add";
-
-            if (window.dragMode === "add") {
-                currentExclude.push(itemToToggle.id);
-                itemToToggle.style.fill = "#888";
-            } else {
-                currentExclude = currentExclude.filter(id => id !== itemToToggle.id);
-                itemToToggle.style.fill = "#2c7448";
-            }
-
-            saveExcludeList(currentExclude);
-
-            if (mode === "quiz") startQuiz();
-            return true;
-        }
-
         item.addEventListener('contextmenu', (event) => {
             event.preventDefault();
             const currentExclude = getCurrentExcludeList();
@@ -160,7 +119,6 @@ function setupPaths() {
             }
 
             const currentExclude = getCurrentExcludeList();
-            let level = 0;
             const target = shuffledPaths[currentIndex];
 
             if (mode === "lernen") {
@@ -170,8 +128,6 @@ function setupPaths() {
 
             if (currentExclude.includes(item.id)) return;
             totalAttempts++;
-
-            level = failCounts[target.id] ? Math.min(failCounts[target.id]-1, failColors.length-1) : 0;
 
             if (item === target) {
                 if (blinkingIntervals[target.id]) {
@@ -282,7 +238,7 @@ function resetQuiz() {
 }
 
 function showTooltip(item) {
-    let provinceId = null;
+    let provinceId;
     let parent = item.parentElement;
     while (parent && !parent.id.startsWith("p_")) {
         parent = parent.parentElement;
