@@ -60,10 +60,6 @@ function setupPaths() {
             }
         });
 
-        item.addEventListener('click', () => {
-            if (mode === "lernen") showTooltip(item);
-        });
-
         if (!window.rightMouseSystemInitialized) {
             window.rightMouseDown = false;
             window.dragMode = null;
@@ -129,7 +125,9 @@ function setupPaths() {
 
         item.addEventListener('contextmenu', (event) => {
             event.preventDefault();
-            toggleExclude(item);
+            const currentExclude = getCurrentExcludeList();
+            window.dragMode = currentExclude.includes(item.id) ? "remove" : "add";
+            togglePathExclude(item, window.dragMode);
         });
 
         item.addEventListener('mouseenter', () => {
@@ -141,17 +139,11 @@ function setupPaths() {
             const isExcluded = currentExclude.includes(item.id);
 
             if (window.dragMode === "add" && !isExcluded) {
-                currentExclude.push(item.id);
-                item.style.fill = "#888";
-                saveExcludeList(currentExclude);
-                if (mode === "quiz") startQuiz();
+                togglePathExclude(item, window.dragMode);
             }
 
             if (window.dragMode === "remove" && isExcluded) {
-                currentExclude = currentExclude.filter(id => id !== item.id);
-                item.style.fill = "#2c7448";
-                saveExcludeList(currentExclude);
-                if (mode === "quiz") startQuiz();
+                togglePathExclude(item, window.dragMode);
             }
         });
 
@@ -161,6 +153,11 @@ function setupPaths() {
                 return;
             }
             if (item.style.display === "none") return;
+
+            if (markMode) {
+                togglePathExclude(item);
+                return;
+            }
 
             const currentExclude = getCurrentExcludeList();
             let level = 0;
@@ -273,7 +270,8 @@ function resetQuiz() {
         item.style.fill = "#2c7448";
     });
 
-    shuffledPaths = svgPath.filter(p => !excludeList.includes(p.id));
+    const currentExclude = getCurrentExcludeList();
+    shuffledPaths = svgPath.filter(p => !currentExclude.includes(p.id));
     shuffledPaths.sort(() => Math.random() - 0.5);
 
     updateScore();

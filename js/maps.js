@@ -15,6 +15,56 @@ function getActivePaths() {
     );
 }
 
+function saveCurrentExcludeList(list) {
+    if (activeMap === "default") {
+        excludeList = list;
+        localStorage.setItem("excludeList", JSON.stringify(excludeList));
+    } else {
+        mapExcludeLists[activeMap] = list;
+        localStorage.setItem("mapExcludeLists", JSON.stringify(mapExcludeLists));
+    }
+}
+
+function updatePathColors() {
+    const currentExclude = getCurrentExcludeList();
+
+    svgPath.forEach(p => {
+        if (p.style.display === "none") return;
+        p.style.fill = currentExclude.includes(p.id) ? "#888" : "#2c7448";
+    });
+}
+
+function confirmMapChangeIfNeeded() {
+    if (mode !== "quiz" || totalAttempts === 0) return true;
+
+    return confirm(
+        "Diese Aktion setzt deine Runde zurueck.\n\nFortfahren und Karte veraendern?"
+    );
+}
+
+function togglePathExclude(itemToToggle, dragMode = null) {
+    if (itemToToggle.style.display === "none") return false;
+    if (!confirmMapChangeIfNeeded()) return false;
+
+    let currentExclude = getCurrentExcludeList();
+    const isExcluded = currentExclude.includes(itemToToggle.id);
+    const modeToApply = dragMode || (isExcluded ? "remove" : "add");
+
+    if (modeToApply === "add" && !isExcluded) {
+        currentExclude = [...currentExclude, itemToToggle.id];
+        itemToToggle.style.fill = "#888";
+    }
+
+    if (modeToApply === "remove" && isExcluded) {
+        currentExclude = currentExclude.filter(id => id !== itemToToggle.id);
+        itemToToggle.style.fill = "#2c7448";
+    }
+
+    saveCurrentExcludeList(currentExclude);
+    if (mode === "quiz") startQuiz();
+    return true;
+}
+
 function buildRegionProvinceStructure() {
     const structure = {};
 
@@ -236,32 +286,39 @@ deleteMapBtn.addEventListener("click", () => {
 });
 
 toggleMapBtn.addEventListener("click", () => {
+    if (!confirmMapChangeIfNeeded()) return;
+
     const currentExclude = getCurrentExcludeList();
 
     if (currentExclude.length === 0) {
         const pathsToExclude = getActivePaths().map(p => p.id);
-        if (activeMap === "default") {
-            excludeList = pathsToExclude;
-            localStorage.setItem("excludeList", JSON.stringify(excludeList));
-        } else {
-            mapExcludeLists[activeMap] = pathsToExclude;
-            localStorage.setItem("mapExcludeLists", JSON.stringify(mapExcludeLists));
-        }
+        saveCurrentExcludeList(pathsToExclude);
     } else {
-        if (activeMap === "default") {
-            excludeList = [];
-            localStorage.setItem("excludeList", JSON.stringify(excludeList));
-        } else {
-            mapExcludeLists[activeMap] = [];
-            localStorage.setItem("mapExcludeLists", JSON.stringify(mapExcludeLists));
-        }
+        saveCurrentExcludeList([]);
     }
 
-    svgPath.forEach(p => {
-        const currentExclude = getCurrentExcludeList();
-        if (currentExclude.includes(p.id)) p.style.fill = "#888";
-        else p.style.fill = "#2c7448";
-    });
-
+    updatePathColors();
     if (mode === "quiz") startQuiz();
+    mapMenu.classList.remove("open");
+    mapMenuBtn.setAttribute("aria-expanded", "false");
+});
+
+mapMenuBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const isOpen = mapMenu.classList.toggle("open");
+    mapMenuBtn.setAttribute("aria-expanded", String(isOpen));
+});
+
+mapMenu.addEventListener("click", (event) => {
+    event.stopPropagation();
+});
+
+document.addEventListener("click", () => {
+    mapMenu.classList.remove("open");
+    mapMenuBtn.setAttribute("aria-expanded", "false");
+});
+
+markModeToggle.addEventListener("change", () => {
+    markMode = markModeToggle.checked;
+    document.body.classList.toggle("markModeActive", markMode);
 });

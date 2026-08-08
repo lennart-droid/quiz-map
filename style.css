@@ -55,18 +55,65 @@
     padding: 5px 10px;
 }
 
-#mapContainer,
-#mapContainer svg,
-#mapContainer svg path {
-    touch-action: pan-x pan-y;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-}
-
 #addMapBtn {
     font-size: 20px;
     cursor: pointer;
+}
+
+.menuWrapper {
+    position: relative;
+}
+
+.menuWrapper > button,
+.menu button {
+    cursor: pointer;
+}
+
+.menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 260px;
+    padding: 8px;
+    background: white;
+    border: 1px solid #bbb;
+    border-radius: 8px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+    z-index: 20;
+}
+
+.menu.open {
+    display: grid;
+    gap: 8px;
+}
+
+.menu button,
+.menuToggle {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 16px;
+    font-family: sans-serif;
+}
+
+.menu button {
+    padding: 8px 10px;
+    text-align: left;
+    background: #f4f4f4;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.menuToggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 4px;
+    cursor: pointer;
+}
+
+body.markModeActive #mapMenuBtn {
+    outline: 3px solid rgba(30,131,70,0.55);
 }
 
 .modal {

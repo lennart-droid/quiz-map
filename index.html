@@ -41,7 +41,16 @@
                 <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
             </svg>
     </button>
-    <button id="toggleMapBtn" title="Alle Gemeinden markieren / zurücksetzen">🗺️</button>
+    <div id="mapTools" class="menuWrapper">
+        <button id="mapMenuBtn" title="Karten-Menü" aria-haspopup="true" aria-expanded="false">🗺️</button>
+        <div id="mapMenu" class="menu" aria-label="Karten-Menü">
+            <button id="toggleMapBtn" type="button">Alle Gemeinden markieren / zurücksetzen</button>
+            <label class="menuToggle">
+                <input id="markModeToggle" type="checkbox">
+                <span>Markierungsmodus</span>
+            </label>
+        </div>
+    </div>
     <button id="mouseBtn" title="Tooltip Einstellungen">⚙️</button>
     <button id="soundToggleBtn" title="Sound an/aus">🔊</button>
     <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="1" style="width:100px;">

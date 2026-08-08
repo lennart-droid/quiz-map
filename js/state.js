@@ -12,7 +12,10 @@ const winSound = new Audio("sounds/winSound.m4a");
 const deleteMapBtn = document.getElementById("deleteMapBtn");
 const soundToggleBtn = document.getElementById("soundToggleBtn");
 const volumeSlider = document.getElementById("volumeSlider");
+const mapMenuBtn = document.getElementById("mapMenuBtn");
+const mapMenu = document.getElementById("mapMenu");
 const toggleMapBtn = document.getElementById("toggleMapBtn");
+const markModeToggle = document.getElementById("markModeToggle");
 
 const mapSelect = document.getElementById("mapSelect");
 const addMapBtn = document.getElementById("addMapBtn");
@@ -44,6 +47,7 @@ let soundEnabled = true;
 let customMaps = JSON.parse(localStorage.getItem("customMaps")) || {};
 let activeMap = "default";
 let mapExcludeLists = JSON.parse(localStorage.getItem("mapExcludeLists")) || {};
+let markMode = false;
 
 let tooltipSettings = JSON.parse(localStorage.getItem("tooltipSettings")) || {
     generalSize: 12,
