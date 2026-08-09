@@ -270,9 +270,10 @@ function updateQuizTooltipPosition(event) {
     const provinceId = province.id;
 
     const size = tooltipSettings.provinces[provinceId] || tooltipSettings.generalSize;
+    const offset = Math.max(3, Math.round(size * 0.8));
 
-    const x = event.clientX + window.scrollX + 10;
-    const y = event.clientY + window.scrollY + 10;
+    const x = event.clientX + window.scrollX + offset;
+    const y = event.clientY + window.scrollY + offset;
 
     toggle.style.left = `${x}px`;
     toggle.style.top = `${y}px`;
