@@ -32,30 +32,20 @@ function setupPaths() {
     svgPath.forEach(item => {
         item.addEventListener('mouseover', () => {
             const currentExclude = getCurrentExcludeList();
-            if (!currentExclude.includes(item.id)) item.style.fill = "#4b9c6b";
+            if (currentExclude.includes(item.id)) return;
+
+            if (mode === "quiz" && guessedPaths.has(item.id)) {
+                item.style.fill = getPathBaseColor(item, currentExclude);
+                return;
+            }
+
+            item.style.fill = "#4b9c6b";
         });
         item.addEventListener('mouseout', () => {
             if (blinkingIntervals[item.id]) return;
             const currentExclude = getCurrentExcludeList();
 
-            if (currentExclude.includes(item.id)) {
-                item.style.fill = "#888";
-                return;
-            }
-
-            if (mode === "lernen") {
-                item.style.fill = "#2c7448";
-                return;
-            }
-
-            if (mode === "quiz") {
-                if (guessedPaths.has(item.id)) {
-                    item.style.fill = finalColors[item.id];
-                    return;
-                }
-
-                item.style.fill = "#2c7448";
-            }
+            item.style.fill = getPathBaseColor(item, currentExclude);
         });
 
         if (!window.rightMouseSystemInitialized) {

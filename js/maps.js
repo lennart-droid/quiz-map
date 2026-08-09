@@ -30,8 +30,16 @@ function updatePathColors() {
 
     svgPath.forEach(p => {
         if (p.style.display === "none") return;
-        p.style.fill = currentExclude.includes(p.id) ? "#888" : "#2c7448";
+        p.style.fill = getPathBaseColor(p, currentExclude);
     });
+}
+
+function getPathBaseColor(path, currentExclude = getCurrentExcludeList()) {
+    if (currentExclude.includes(path.id)) return "#888";
+    if (mode === "quiz" && guessedPaths.has(path.id)) {
+        return finalColors[path.id] || "#ffffff";
+    }
+    return "#2c7448";
 }
 
 function confirmMapChangeIfNeeded() {
