@@ -6,7 +6,7 @@ function startQuiz() {
     currentIndex = 0;
     for (let key in failCounts) delete failCounts[key];
 
-    shuffledPaths = getActivePaths().slice().sort(() => Math.random() - 0.5);
+    shuffledPaths = shuffleArray(getActivePaths());
 
     svgPath.forEach(p => {
         if (p.style.display === "none") return;
@@ -26,6 +26,17 @@ function startQuiz() {
 function updateScore() {
     const percent = totalAttempts ? Math.round((guessedCount / totalAttempts) * 100) : 0;
     scoreDiv.innerHTML = `${guessedCount}/${shuffledPaths.length} | ${percent}%`;
+}
+
+function shuffleArray(items) {
+    const shuffled = items.slice();
+
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    return shuffled;
 }
 
 function setupPaths() {
@@ -216,9 +227,7 @@ function resetQuiz() {
         item.style.fill = "#2c7448";
     });
 
-    const currentExclude = getCurrentExcludeList();
-    shuffledPaths = svgPath.filter(p => !currentExclude.includes(p.id));
-    shuffledPaths.sort(() => Math.random() - 0.5);
+    shuffledPaths = shuffleArray(getActivePaths());
 
     updateScore();
 
